@@ -13,6 +13,8 @@ RED=$'\033[91m'
 RESET=$'\033[0m'
 UNDERLINE=$'\033[4m'
 CLEAR_LINE=$'\r\033[K'
+HIDE_CURSOR=$'\e[?25l'
+SHOW_CURSOR=$'\e[?25h'
 
 move_cursor_to() {
     printf '\033[%d;%dH' "$1" "$2"
@@ -58,23 +60,23 @@ STATS_LINE=0
 
 setup_terminal() {
     stty -echo -icanon time 0 min 1
-    printf '\e[?25l'
+    printf "${HIDE_CURSOR}"
     clear
+}
+
+restore_terminal() {
+    stty echo icanon
+    printf "${SHOW_CURSOR}"
+    echo
 }
 
 draw_initial_screen() {
     clear
     printf "Type the text:\n"
     printf "================\n"
-    printf "\n\n  "
+    printf "\n\n"
     printf "\n\n"
     printf "\n  Press ESC to quit\n\n"
-}
-
-restore_terminal() {
-    stty echo icanon
-    printf '\e[?25h'
-    echo
 }
 
 update_text_display() {
