@@ -151,7 +151,7 @@ calculate_wpm() {
     local time_elapsed="$2"
 
     if (( time_elapsed > 0 )); then
-        echo "scale=2; ($chars / 5) * (60 / $time_elapsed)" | bc -l
+        echo "scale=2; ($chars / 5) * (60000 / $time_elapsed)" | bc -l
     else
         echo "0"
     fi
@@ -162,7 +162,7 @@ calculate_cpm() {
     local time_elapsed="$2"
 
     if (( time_elapsed > 0 )); then
-        echo "scale=2; $chars * (60 / $time_elapsed)" | bc -l
+        echo "scale=2; $chars * (60000 / $time_elapsed)" | bc -l
     else
         echo "0"
     fi
@@ -231,12 +231,12 @@ handle_input() {
                 CURRENT_POS=$((CURRENT_POS + 1))
 
                 if (( START_TIME == 0 )); then
-                    START_TIME=$(date +%s)
+                    START_TIME=$(date +%s%3N)
                 fi
             fi
         fi
 
-        current_time=$(date +%s)
+        current_time=$(date +%s%3N)
         time_elapsed=$((current_time - START_TIME))
         correct_chars=$((${#TYPED_TEXT} - MISTAKES))
         wpm_actual=$(calculate_wpm "$correct_chars" "$time_elapsed")
@@ -260,7 +260,7 @@ reset_session() {
 }
 
 show_results() {
-    local end_time=$(date +%s)
+    local end_time=$(date +%s%3N)
     local total_time=$((end_time - START_TIME))
     local correct_chars=$((${#TYPED_TEXT} - MISTAKES))
     local wpm_actual=$(calculate_wpm "$correct_chars" "$total_time")
@@ -272,7 +272,7 @@ show_results() {
     clear
     printf "\nResults\n"
     printf "========\n\n"
-    printf "  Time: %d seconds\n" "$total_time"
+    printf "  Time: %.1f seconds\n" "$(echo "scale=1; $total_time / 1000" | bc -l)"
     printf "  WPM: %.0f/%.0f (real/raw)\n" "$wpm_actual" "$wpm_raw"
     printf "  CPM: %.0f/%.0f (real/raw)\n" "$cpm_actual" "$cpm_raw"
     printf "  Accuracy: %.1f%%\n" "$accuracy"
@@ -330,7 +330,7 @@ local session_num=1
                 session_completed=1
                 completed_sessions=$((completed_sessions + 1))
 
-                local end_time=$(date +%s)
+                local end_time=$(date +%s%3N)
                 local session_time=$((end_time - START_TIME))
                 local correct_chars=$((${#TYPED_TEXT} - MISTAKES))
                 local session_wpm_actual=$(calculate_wpm "$correct_chars" "$session_time")
@@ -384,7 +384,7 @@ local session_num=1
             local avg_cpm_raw=$(echo "scale=1; $total_cpm_raw / $completed_sessions" | bc -l)
             local avg_accuracy=$(echo "scale=1; $total_accuracy / $completed_sessions" | bc -l)
 
-            printf "  Total time: %d seconds\n" "$total_time"
+            printf "  Total time: %.1f seconds\n" "$(echo "scale=1; $total_time / 1000" | bc -l)"
             printf "  Total characters typed: %d\n" "$total_chars_typed"
             printf "  Total typos: %d\n" "$total_typos"
             printf "  Average WPM: %.0f/%.0f (real/raw)\n" "$avg_wpm_actual" "$avg_wpm_raw"
